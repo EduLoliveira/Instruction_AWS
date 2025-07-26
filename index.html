@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia de Estudos: Containers na AWS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .prose {
+            max-width: 80ch; /* Limita a largura para melhor legibilidade */
+        }
+        .prose h1, .prose h2, .prose h3, .prose h4 {
+            font-weight: 700;
+        }
+        .prose p {
+            line-height: 1.7;
+        }
+        .prose code {
+            color: #d63384;
+            background-color: #f8f9fa;
+            padding: 0.2em 0.4em;
+            border-radius: 6px;
+        }
+        .prose pre {
+            position: relative;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background-color: #4a5568;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: all 0.2s ease-in-out;
+        }
+        .prose pre:hover .copy-btn {
+            opacity: 1;
+        }
+        .copy-btn-icon .fa-check {
+            display: none;
+        }
+        .copy-btn-icon.copied .fa-copy {
+            display: none;
+        }
+        .copy-btn-icon.copied .fa-check {
+            display: inline-block;
+        }
+        .sidebar-link.active {
+            background-color: #4f46e5;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="flex h-screen bg-gray-200">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-gray-800 text-gray-100 flex-shrink-0" id="sidebar">
+            <div class="p-4">
+                <h1 class="text-xl font-bold text-white">Guia AWS Containers</h1>
+            </div>
+            <nav class="mt-4 text-sm" id="nav-menu">
+                <a href="#modulo1" class="sidebar-link block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white">
+                    <i class="fas fa-book-open w-6"></i> Módulo 1: Fundamentos
+                </a>
+                <a href="#modulo2" class="sidebar-link block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white">
+                    <i class="fas fa-server w-6"></i> Módulo 2: EC2
+                </a>
+                <a href="#modulo3" class="sidebar-link block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white">
+                    <i class="fas fa-box-archive w-6"></i> Módulo 3: ECR
+                </a>
+                <a href="#modulo4" class="sidebar-link block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white">
+                    <i class="fas fa-sitemap w-6"></i> Módulo 4: ECS + EC2
+                </a>
+                <a href="#modulo5" class="sidebar-link block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white">
+                    <i class="fas fa-chart-line w-6"></i> Módulo 5: Auto Scaling
+                </a>
+                <a href="#modulo6" class="sidebar-link block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white">
+                    <i class="fab fa-github-alt w-6"></i> Módulo 6: CI/CD
+                </a>
+                <a href="#modulo7" class="sidebar-link block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white">
+                    <i class="fas fa-cloud w-6"></i> Módulo 7: Fargate
+                </a>
+                <a href="#modulo8" class="sidebar-link block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 hover:text-white">
+                    <i class="fas fa-palette w-6"></i> Módulo 8: Deploy Avançado
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main content -->
+        <main class="flex-1 overflow-y-auto bg-white p-6 md:p-10">
+            <div class="prose mx-auto">
+                <section id="modulo1" class="mb-12">
+                    <h2 class="text-3xl font-bold border-b pb-2 mb-6">📘 Módulo 1: Fundamentos de Containers e Docker</h2>
+
+                    <h3 class="text-2xl font-semibold mt-6">1.1 O que é um Container? Diferenças entre VM e Container</h3>
+                    <p><strong>Máquina Virtual (VM)</strong>: Virtualiza o hardware físico. Executa um sistema operacional completo (Guest OS) sobre um hypervisor.</p>
+                    <ul>
+                        <li><strong>Vantagens</strong>: Isolamento robusto, compatibilidade com diferentes sistemas operacionais.</li>
+                        <li><strong>Desvantagens</strong>: Consumo elevado de recursos (CPU, RAM, armazenamento), inicialização lenta.</li>
+                    </ul>
+                    <p><strong>Container</strong>: Virtualiza o sistema operacional (compartilha o kernel do host). Contém apenas a aplicação e suas dependências.</p>
+                     <ul>
+                        <li><strong>Vantagens</strong>: Leve (MBs vs GBs), inicialização rápida, alta portabilidade.</li>
+                        <li><strong>Desvantagens</strong>: Menor isolamento (kernel compartilhado).</li>
+                    </ul>
+                    
+                    <h4 class="text-xl font-semibold mt-4">Tabela Comparativa</h4>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white border">
+                            <thead class="bg-gray-200">
+                                <tr>
+                                    <th class="py-2 px-4 border">Característica</th>
+                                    <th class="py-2 px-4 border">Máquina Virtual (VM)</th>
+                                    <th class="py-2 px-4 border">Container</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td class="border px-4 py-2"><strong>Abstração</strong></td><td class="border px-4 py-2">Hardware</td><td class="border px-4 py-2">Sistema Operacional</td></tr>
+                                <tr><td class="border px-4 py-2"><strong>Isolamento</strong></td><td class="border px-4 py-2">Completo (nível HW)</td><td class="border px-4 py-2">Forte (nível processo)</td></tr>
+                                <tr><td class="border px-4 py-2"><strong>Tamanho</strong></td><td class="border px-4 py-2">Gigabytes (GBs)</td><td class="border px-4 py-2">Megabytes (MBs)</td></tr>
+                                <tr><td class="border px-4 py-2"><strong>Tempo de Início</strong></td><td class="border px-4 py-2">Minutos</td><td class="border px-4 py-2">Segundos</td></tr>
+                                <tr><td class="border px-4 py-2"><strong>Consumo de Recursos</strong></td><td class="border px-4 py-2">Alto (SO completo)</td><td class="border px-4 py-2">Baixo (kernel compartilhado)</td></tr>
+                                <tr><td class="border px-4 py-2"><strong>Portabilidade</strong></td><td class="border px-4 py-2">Limitada (depende do hypervisor)</td><td class="border px-4 py-2">Altíssima (Docker)</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <h3 class="text-2xl font-semibold mt-8">1.2 Estrutura de uma Imagem Docker</h3>
+                    <ul>
+                        <li><strong>Imagem Docker</strong>: "Blueprint" imutável contendo código, runtime, bibliotecas e configurações.</li>
+                        <li><strong>Camadas (Layers)</strong>: Cada instrução no Dockerfile cria uma nova camada.</li>
+                        <li><strong>Union File System</strong>: Combina camadas em um único sistema de arquivos.</li>
+                        <li><strong>Benefícios</strong>:
+                            <ul>
+                                <li><strong>Eficiência</strong>: Camadas são compartilhadas entre diferentes imagens.</li>
+                                <li><strong>Cache</strong>: Reutiliza camadas em builds subsequentes, acelerando o processo.</li>
+                                <li><strong>Versionamento</strong>: Um hash SHA256 garante a integridade e o versionamento de cada camada.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <h3 class="text-2xl font-semibold mt-8">1.3 Dockerfile: Comandos Essenciais</h3>
+                    <pre class="bg-gray-800 text-white p-4 rounded-lg overflow-auto"><button class="copy-btn"><span class="copy-btn-icon"><i class="fas fa-copy"></i><i class="fas fa-check"></i></span></button><code class="language-dockerfile"># Usa uma imagem base oficial do Python
+FROM python:3.11-slim
+
+# Define o diretório de trabalho dentro do container
+WORKDIR /app
+
+# Copia o arquivo de dependências e instala
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copia o restante do código da aplicação
+COPY . .
+
+# Expõe a porta 5000 (apenas para documentação)
+EXPOSE 5000
+
+# Comando padrão que será executado ao iniciar o container
+CMD ["python", "app.py"]</code></pre>
+
+                    <h3 class="text-2xl font-semibold mt-8">1.4 Docker Compose (Básico)</h3>
+                    <p>Use o Docker Compose para orquestrar múltiplos containers localmente.</p>
+                    <pre class="bg-gray-800 text-white p-4 rounded-lg overflow-auto"><button class="copy-btn"><span class="copy-btn-icon"><i class="fas fa-copy"></i><i class="fas fa-check"></i></span></button><code class="language-yaml">version: '3.8'
+services:
+  # Serviço da sua aplicação web
+  web:
+    build: .
+    ports:
+      - "8000:5000"
+    volumes:
+      - .:/app
+    environment:
+      - FLASK_ENV=development
+    depends_on:
+      - redis
+
+  # Serviço do banco de dados Redis
+  redis:
+    image: "redis:alpine"</code></pre>
+                </section>
+
+                <section id="modulo2" class="mb-12">
+                    <h2 class="text-3xl font-bold border-b pb-2 mb-6">🧱 Módulo 2: EC2 (Elastic Compute Cloud)</h2>
+                    <h3 class="text-2xl font-semibold mt-6">2.1 O que é EC2?</h3>
+                    <p>Pense no <strong>EC2</strong> como o serviço de <strong>aluguel de servidores virtuais</strong> na nuvem da AWS. É a base da computação na AWS. Em vez de comprar um servidor físico, você "aluga" poder computacional e paga apenas pelo tempo que usa.</p>
+                    <h4 class="text-xl font-semibold mt-4">O que você pode fazer com uma instância EC2?</h4>
+                    <ul>
+                        <li>Instalar e rodar qualquer software (como um servidor web Nginx, um banco de dados MySQL ou o próprio Docker).</li>
+                        <li>Hospedar o back-end de uma aplicação web.</li>
+                        <li>Processar grandes volumes de dados.</li>
+                        <li>Servir como um "host" para seus containers Docker.</li>
+                    </ul>
+
+                    <h3 class="text-2xl font-semibold mt-8">2.2 Exemplo Melhorado: Preparando um Servidor para Rodar um Container</h3>
+                     <p>Neste exemplo, vamos lançar uma instância EC2, instalar o Docker nela e rodar um container de uma aplicação web. Este é o método "manual" e serve de base para entender o que o ECS fará por nós mais tarde.</p>
+                    <pre class="bg-gray-800 text-white p-4 rounded-lg overflow-auto"><button class="copy-btn"><span class="copy-btn-icon"><i class="fas fa-copy"></i><i class="fas fa-check"></i></span></button><code class="language-bash"># 1. Atualiza a lista de pacotes do sistema
+sudo apt update -y
+
+# 2. Instala o Docker
+sudo apt install -y docker.io
+
+# 3. Inicia o serviço do Docker e o habilita para iniciar com o boot
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# 4. Adiciona seu usuário 'ubuntu' ao grupo 'docker' para não precisar usar 'sudo'
+sudo usermod -aG docker $USER
+newgrp docker # Aplica a mudança de grupo na sessão atual
+</code></pre>
+                     <pre class="bg-gray-800 text-white p-4 rounded-lg overflow-auto mt-4"><button class="copy-btn"><span class="copy-btn-icon"><i class="fas fa-copy"></i><i class="fas fa-check"></i></span></button><code class="language-bash"># Testa a instalação
+docker run hello-world
+
+# Roda uma aplicação web de exemplo
+# -d: roda em background
+# -p 80:5000: mapeia a porta 80 do servidor para a porta 5000 do container
+docker run -d -p 80:5000 --name minha-app-web kennethreitz/httpbin
+</code></pre>
+                    <p class="mt-2"><strong>Resultado</strong>: Abra seu navegador e acesse o IP Público da sua instância EC2. Você verá a página da aplicação <code>httpbin</code> funcionando!</p>
+                </section>
+
+                <section id="modulo3" class="mb-12">
+                    <h2 class="text-3xl font-bold border-b pb-2 mb-6">📦 Módulo 3: Amazon ECR (Elastic Container Registry)</h2>
+                    <h3 class="text-2xl font-semibold mt-6">3.1 O que é ECR?</h3>
+                    <p>Pense no <strong>ECR</strong> como a <strong>"garagem" privada da AWS para suas imagens Docker</strong>. Enquanto o Docker Hub é um registro público, o ECR é o seu registro privado, seguro e totalmente integrado ao ecossistema da AWS.</p>
+
+                    <h3 class="text-2xl font-semibold mt-8">3.2 Exemplo: Construindo e Enviando uma Imagem para o ECR</h3>
+                     <p>Neste exemplo, vamos pegar uma aplicação simples, criar uma imagem Docker para ela e publicá-la no nosso ECR.</p>
+                     <pre class="bg-gray-800 text-white p-4 rounded-lg overflow-auto"><button class="copy-btn"><span class="copy-btn-icon"><i class="fas fa-copy"></i><i class="fas fa-check"></i></span></button><code class="language-bash"># Variáveis para facilitar (substitua com seus valores)
+export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+export AWS_REGION=us-east-1
+export REPOSITORY_NAME=minha-aplicacao-web
+export IMAGE_TAG=latest
+
+# 1. Autentica o Docker no registro ECR
+aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+
+# 2. Constrói a imagem Docker localmente
+docker build -t $REPOSITORY_NAME:$IMAGE_TAG .
+
+# 3. Adiciona a "tag" completa do ECR à imagem
+docker tag $REPOSITORY_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPOSITORY_NAME:$IMAGE_TAG
+
+# 4. Envia a imagem para o ECR
+docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPOSITORY_NAME:$IMAGE_TAG
+</code></pre>
+                </section>
+
+                <section id="modulo4" class="mb-12">
+                    <h2 class="text-3xl font-bold border-b pb-2 mb-6">⚙️ Módulo 4: ECS com Launch Type EC2</h2>
+                    <h3 class="text-2xl font-semibold mt-6">4.1 O que é ECS? (E os Conceitos Principais)</h3>
+                    <p>Pense no <strong>ECS (Elastic Container Service)</strong> como o <strong>"maestro" ou "gerente" dos seus containers</strong>. Você já tem os servidores (EC2) e as imagens (ECR). O trabalho do ECS é pegar essas imagens e executá-las nos servidores de forma inteligente, garantindo que sua aplicação esteja sempre no ar, saudável e escalável.</p>
+                     <ul>
+                         <li><strong>Cluster</strong>: O "palco" onde seus containers vão rodar.</li>
+                         <li><strong>Task Definition</strong>: A "receita de bolo" da sua aplicação (imagem, CPU, memória, portas).</li>
+                         <li><strong>Task</strong>: Uma instância em execução de uma Task Definition.</li>
+                         <li><strong>Service</strong>: Garante que um número desejado de Tasks esteja sempre rodando e se integra com Load Balancers.</li>
+                     </ul>
+                    <h3 class="text-2xl font-semibold mt-8">4.2 Exemplo: Fazendo o Deploy com ECS + EC2</h3>
+                    <p>Agora vamos juntar tudo: usar o ECS para pegar nossa imagem do ECR e rodá-la em um cluster de instâncias EC2. Os passos abaixo são um resumo do que é feito no Console da AWS.</p>
+                    <ol class="list-decimal list-inside space-y-2">
+                        <li><strong>Criar o Cluster ECS</strong>: No console do ECS, crie um novo cluster do tipo "EC2 Linux + Networking", definindo o tipo e a quantidade de instâncias desejada (ex: 2 instâncias `t2.micro`).</li>
+                        <li><strong>Criar a Task Definition</strong>: Crie uma definição de tarefa, especifique o launch type `EC2`, aponte para a URI da sua imagem no ECR e mapeie as portas (ex: porta `5000` do container).</li>
+                        <li><strong>Criar o Serviço</strong>: Dentro do cluster, crie um serviço, associe a Task Definition criada, defina o número de tarefas desejadas (ex: 2 para alta disponibilidade) e configure um Application Load Balancer para distribuir o tráfego.</li>
+                    </ol>
+                    <p class="mt-4"><strong>Resultado Final</strong>: O ECS irá agendar a execução de duas tarefas nas suas instâncias EC2. Cada tarefa irá puxar a imagem do ECR. O Load Balancer distribuirá o tráfego entre elas. Se uma instância ou tarefa falhar, o ECS a substituirá automaticamente.</p>
+                </section>
+
+                <section id="modulo5" class="mb-12">
+                    <h2 class="text-3xl font-bold border-b pb-2 mb-6">📈 Módulo 5: Auto Scaling em ECS</h2>
+                    <ul>
+                        <li><strong>Service Auto Scaling</strong>: Ajusta o número de <em>tarefas</em> com base em métricas como uso de CPU ou memória do serviço.</li>
+                        <li><strong>Cluster Auto Scaling</strong>: Usa <em>Capacity Providers</em> para ajustar o número de <em>instâncias EC2</em> no cluster. Se o serviço precisar de mais tarefas, mas não houver capacidade de EC2, o cluster adicionará mais máquinas.</li>
+                    </ul>
+                </section>
+                
+                <section id="modulo6" class="mb-12">
+                    <h2 class="text-3xl font-bold border-b pb-2 mb-6">🔄 Módulo 6: CI/CD com GitHub Actions + ECS</h2>
+                    <p>Um workflow de CI/CD automatiza o processo de build e deploy. A cada `push` no GitHub:</p>
+                    <ol class="list-decimal list-inside space-y-2">
+                        <li>A imagem Docker é construída.</li>
+                        <li>A imagem é enviada para o ECR com uma nova tag.</li>
+                        <li>Uma nova revisão da Task Definition é criada.</li>
+                        <li>O Serviço ECS é atualizado para usar a nova Task Definition, realizando um deploy sem downtime.</li>
+                    </ol>
+                </section>
+
+                <section id="modulo7" class="mb-12">
+                     <h2 class="text-3xl font-bold border-b pb-2 mb-6">☁️ Módulo 7: ECS com Fargate (Serverless)</h2>
+                     <p>Fargate é uma alternativa ao modo EC2. Com Fargate, você não gerencia nenhum servidor.</p>
+                     <h4 class="text-xl font-semibold mt-4">Diferenças Chave: ECS EC2 vs. Fargate</h4>
+                     <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white border">
+                            <thead class="bg-gray-200">
+                                <tr>
+                                    <th class="py-2 px-4 border">Característica</th>
+                                    <th class="py-2 px-4 border">ECS com EC2</th>
+                                    <th class="py-2 px-4 border">ECS com Fargate (Serverless)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td class="border px-4 py-2"><strong>Gerenciamento</strong></td><td class="border px-4 py-2"><strong>Você</strong> gerencia as instâncias EC2.</td><td class="border px-4 py-2"><strong>AWS</strong> gerencia a infraestrutura.</td></tr>
+                                <tr><td class="border px-4 py-2"><strong>Custo</strong></td><td class="border px-4 py-2">Pago pela instância EC2 inteira.</td><td class="border px-4 py-2">Pago por vCPU e memória usados pela tarefa.</td></tr>
+                                <tr><td class="border px-4 py-2"><strong>Controle</strong></td><td class="border px-4 py-2">Maior controle sobre a instância.</td><td class="border px-4 py-2">Menos controle, mais simplicidade.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="modulo8" class="mb-12">
+                    <h2 class="text-3xl font-bold border-b pb-2 mb-6">🎨 Módulo 8: CI/CD Avançado (Blue/Green, Canary)</h2>
+                    <ul>
+                        <li><strong>Blue/Green Deployment</strong>: Uma nova versão (Green) é implantada ao lado da versão atual (Blue). Após os testes, o tráfego é instantaneamente desviado para a versão Green. Permite rollback imediato.</li>
+                        <li><strong>Canary Deployment</strong>: A nova versão é liberada para uma pequena porcentagem de usuários (ex: 10%). Se as métricas estiverem boas, a liberação é expandida gradualmente até 100%.</li>
+                    </ul>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- Funcionalidade do botão de copiar ---
+            const copyButtons = document.querySelectorAll('.copy-btn');
+            copyButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const code = btn.parentElement.querySelector('code').innerText;
+                    navigator.clipboard.writeText(code).then(() => {
+                        const iconContainer = btn.querySelector('.copy-btn-icon');
+                        iconContainer.classList.add('copied');
+                        setTimeout(() => {
+                           iconContainer.classList.remove('copied');
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('Falha ao copiar: ', err);
+                    });
+                });
+            });
+
+            // --- Funcionalidade de scroll suave e menu ativo ---
+            const navLinks = document.querySelectorAll('.sidebar-link');
+            const sections = document.querySelectorAll('section');
+
+            const makeLinkActive = (id) => {
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${id}`) {
+                        link.classList.add('active');
+                    }
+                });
+            };
+
+            // Scroll suave ao clicar no menu
+            navLinks.forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    document.querySelector(targetId).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                    // Atualiza o hash na URL sem pular
+                    if(history.pushState) {
+                        history.pushState(null, null, targetId);
+                    } else {
+                        location.hash = targetId;
+                    }
+                });
+            });
+
+            // Highlight do menu ao rolar a página
+            const observerOptions = {
+                root: null,
+                rootMargin: "0px",
+                threshold: 0.3 // 30% da seção visível
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        makeLinkActive(entry.target.id);
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+
+            // Highlight do primeiro item ao carregar
+            if (window.location.hash) {
+                makeLinkActive(window.location.hash.substring(1));
+            } else {
+                 makeLinkActive(sections[0].id);
+            }
+        });
+    </script>
+
+</body>
+</html>
+
